@@ -3,38 +3,245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Syllabus Tracker</title>
+    <title>StudyFlow Dashboard</title>
     <style>
-        :root { --primary: #4a90e2; --bg: #f5f7fa; --text: #333; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 600px; }
-        h1 { text-align: center; color: var(--primary); }
-        
-        .controls { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; gap: 10px; }
-        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
-        button { padding: 10px 15px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        button:hover { opacity: 0.9; }
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --text: #f1f5f9;
+            --text-dim: #94a3b8;
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
 
-        .subject-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position: relative; }
-        .subject-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bg); margin-bottom: 15px; padding-bottom: 5px; }
-        .subject-title { font-size: 1.2rem; font-weight: bold; color: var(--primary); }
-        .delete-btn { background: #ff5f5f; font-size: 0.8rem; padding: 5px 10px; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
 
-        .task-list { list-style: none; padding: 0; }
-        .task-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #eee; }
-        .task-item:last-child { border: none; }
-        .task-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
-        .task-item.done span { text-decoration: line-through; color: #888; }
-        
-        .add-task-row { margin-top: 15px; display: flex; gap: 8px; }
-        .add-task-row input { font-size: 0.9rem; padding: 6px; }
+        .header {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Top Input Area */
+        .add-subject-zone {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .add-subject-zone input {
+            background: var(--card-bg);
+            border: 2px solid #334155;
+            border-radius: 8px 0 0 8px;
+            padding: 12px 20px;
+            color: white;
+            width: 300px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .add-subject-zone input:focus { border-color: var(--accent); }
+
+        .add-subject-zone button {
+            background: var(--accent);
+            border: none;
+            padding: 0 20px;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* LANDSCAPE GRID LAYOUT */
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            align-items: start;
+        }
+
+        .subject-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #334155;
+            transition: transform 0.2s;
+        }
+
+        .subject-card:hover { transform: translateY(-5px); }
+
+        .subject-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .subject-title { font-size: 1.25rem; font-weight: 700; color: var(--accent); }
+
+        .btn-del-sub {
+            background: transparent;
+            color: var(--text-dim);
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .btn-del-sub:hover { color: var(--danger); }
+
+        /* Task List Styles */
+        .task-list { list-style: none; padding: 0; margin: 0; }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #0f172a50;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            gap: 12px;
+        }
+
+        .task-item input[type="checkbox"] {
+            accent-color: var(--accent);
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .task-item span { flex: 1; font-size: 0.95rem; }
+
+        .task-item.done span {
+            text-decoration: line-through;
+            color: var(--text-dim);
+        }
+
+        .delete-task {
+            opacity: 0;
+            color: var(--text-dim);
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .task-item:hover .delete-task { opacity: 1; }
+
+        /* Input for topics inside card */
+        .topic-input {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 10px;
+            border-radius: 8px;
+            color: white;
+            box-sizing: border-box;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>📚 Syllabus Tracker</h1>
-    
+<div class="header">
+    <h1>StudyFlow Dashboard</h1>
+</div>
+
+<div class="add-subject-zone">
+    <input type="text" id="subInput" placeholder="Add a new subject (e.g. Biology)...">
+    <button onclick="addSubject()">Add</button>
+</div>
+
+<div class="subjects-grid" id="grid"></div>
+
+<script>
+    let subjects = JSON.parse(localStorage.getItem('syllabus_pro')) || [];
+
+    // Allow "Enter" key on the main subject input
+    document.getElementById('subInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addSubject();
+    });
+
+    function save() {
+        localStorage.setItem('syllabus_pro', JSON.stringify(subjects));
+        render();
+    }
+
+    function addSubject() {
+        const input = document.getElementById('subInput');
+        if (!input.value.trim()) return;
+        subjects.push({ title: input.value, tasks: [] });
+        input.value = '';
+        save();
+    }
+
+    function deleteSubject(idx) {
+        if(confirm('Delete this subject and all its topics?')) {
+            subjects.splice(idx, 1);
+            save();
+        }
+    }
+
+    function addTopic(idx, text) {
+        if (!text.trim()) return;
+        subjects[idx].tasks.push({ text: text, done: false });
+        save();
+    }
+
+    function toggleTask(sIdx, tIdx) {
+        subjects[sIdx].tasks[tIdx].done = !subjects[sIdx].tasks[tIdx].done;
+        save();
+    }
+
+    function deleteTopic(sIdx, tIdx) {
+        subjects[sIdx].tasks.splice(tIdx, 1);
+        save();
+    }
+
+    function render() {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+
+        subjects.forEach((sub, sIdx) => {
+            const card = document.createElement('div');
+            card.className = 'subject-card';
+            
+            const taskHtml = sub.tasks.map((t, tIdx) => `
+                <li class="task-item ${t.done ? 'done' : ''}">
+                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${sIdx}, ${tIdx})">
+                    <span>${t.text}</span>
+                    <button class="delete-task" onclick="deleteTopic(${sIdx}, ${tIdx})">✕</button>
+                </li>
+            `).join('');
+
+            card.innerHTML = `
+                <div class="subject-header">
+                    <span class="subject-title">${sub.title}</span>
+                    <button class="btn-del-sub" onclick="deleteSubject(${sIdx})">×</button>
+                </div>
+                <ul class="task-list">${taskHtml}</ul>
+                <input type="text" class="topic-input" placeholder="Type topic + Enter..." 
+                    onkeypress="if(event.key==='Enter') addTopic(${sIdx}, this.value)">
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    render();
+</script>
+</body>
+</html>    
     <div class="controls">
         <input type="text" id="subjectInput" placeholder="Enter Subject Name (e.g. Physics)">
         <button onclick="addSubject()">Add Subject</button>
